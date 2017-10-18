@@ -1,0 +1,38 @@
+{
+  "name": "modern-backbone-starterkit",
+  "version": "1.0.0",
+  "description": "Lightweight starting point for a modern backbone web app.",
+  "keywords": [
+    "typescript",
+    "REST",
+    "backend",
+    "boilerplate",
+    "webpack"
+  ],
+  "scripts": {
+    "start": "node build/app.js",
+    "build": "webpack --progress --color --config webpack/webpack.config",
+    "build-v": "webpack --progress --color --display-error-details --config webpack/webpack.config"
+  },
+  "devDependencies": {
+    "@types/express": "^4.0.37",
+    "babel": "^6.23.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "clean-webpack-plugin": "^0.1.17",
+    "copy-webpack-plugin": "^4.1.1",
+    "file-loader": "^1.1.5",
+    "ts-loader": "^3.0.2",
+    "typescript": "^2.5.3",
+    "webpack": "^3.8.0"
+  },
+  "dependencies": {
+    "compression": "^1.7.1",
+    "express": "^4.16.2",
+    "helmet": "^3.9.0",
+    "method-override": "^2.3.10",
+    "morgan": "^1.9.0",
+    "net": "^1.0.2",
+    "simple-git": "^1.80.1"
+  }
+}
