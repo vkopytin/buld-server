@@ -180,13 +180,13 @@ export class Routes {
                                 );
                             });
                             tasks.start();
+                            res.send({
+                                build: 'queued...',
+                            });
                         });
                     },
                     () => { }
                 );
-                res.send({
-                    build: 'queued...',
-                });
             } else {
                 ifExists('./tmp/build.log',
                     (content) => res.send({
