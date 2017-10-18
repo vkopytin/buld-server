@@ -3,6 +3,14 @@ import express = require('express');
 import git = require('simple-git');
 import ChildProcess = require('child_process');
 import fs = require('fs');
+import stripAnsi = require('strip-ansi');
+
+
+function stripStdOut (str) {
+    var res = stripAnsi(str);
+
+    return ('' + res).replace(/\b/g, '');
+}
 
 function statPath(path) {
     try {
@@ -69,7 +77,7 @@ const yarnExec = (cmd: any[], then, options?) => {
      });
      spawned.on('close', function (exitCode, exitSignal) {
          if (exitCode && stdErr.length) {
-             then.call(this, Buffer.concat(stdErr).toString('utf-8'));
+             then.call(this, stripStdOut(Buffer.concat(stdErr).toString('utf-8')));
          }
          else {
              if (options.concatStdErr) {
@@ -81,7 +89,7 @@ const yarnExec = (cmd: any[], then, options?) => {
                  var strStdOutput = stdOutput.toString(options.format || 'utf-8');
              }
 
-             then.call(this, null, strStdOutput);
+             then.call(this, null, stripStdOut(strStdOutput));
          }
      });
 }
