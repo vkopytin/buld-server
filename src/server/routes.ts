@@ -9,7 +9,7 @@ import stripAnsi = require('strip-ansi');
 function stripStdOut (str) {
     var res = stripAnsi(str);
 
-    return ('' + res).replace(/\b/g, '');
+    return ('' + res).replace(/\b+/g, '');
 }
 
 function statPath(path) {
