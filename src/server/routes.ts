@@ -170,6 +170,7 @@ export class Routes {
                                             () => { },
                                             () => {
                                                 fs.rename('./tmp/build.log', buildName, () => {
+                                                    fs.appendFileSync(buildName, '\n\n\n...done!!!');
                                                     cb();
                                                     tasks.end();
                                                 });
