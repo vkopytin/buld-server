@@ -4,7 +4,10 @@ import git = require('simple-git');
 import ChildProcess = require('child_process');
 import fs = require('fs');
 import stripAnsi = require('strip-ansi');
+import queue = require('queue');
 
+
+var tasks = queue();
 
 function stripStdOut (str) {
     var res = stripAnsi(str);
@@ -66,9 +69,11 @@ const yarnExec = (cmd: any[], then, options?) => {
     };
     
     spawned.stdout.on('data', function (buffer) {
+        fs.appendFileSync('./tmp/build.log', stripStdOut(buffer.toString()));
         stdOut.push(buffer);
      });
-     spawned.stderr.on('data', function (buffer) {
+    spawned.stderr.on('data', function (buffer) {
+        fs.appendFileSync('./tmp/build.log', stripStdOut(buffer.toString()));
         stdErr.push(buffer);
      });
 
@@ -143,24 +148,54 @@ export class Routes {
 
         app.get('/api/deploy/:branch', (req: express.Request, res: express.Response, next: express.NextFunction) => {
             var branch = req.params.branch;
+            var buildCode = req.query.code || '';
             var build = ['build', (req.query.build || 'alpha')].join('-');
+            var buildName = './tmp/build-' + buildCode + '.log';
 
-            ifExists('./tmp/build.log',
-                (content) => res.send({
-                    test: 'build is in progress',
-                details: content
-                }), () => writeBuildLog('starting...', () =>
-                    buildChannel(branch, build, (out, out2) => {
-                        fs.unlinkSync('./tmp/build.log');
-                        res.send({
-                            test: 'test',
-                            out: out,
-                            out2: out2
+            if (tasks.length === 0) {
+                ifExists(
+                    buildName,
+                    content => res.send({
+                        test: 'build is in progress',
+                        details: content
+                    }),
+                    () => {
+                        fs.writeFile(buildName, 'starting...\n', 'ascii', () => {
+                            tasks.push(cb => {
+                                writeBuildLog('starting...', () =>
+                                    buildChannel(branch, build, (out, out2) => {
+                                        ifExists(
+                                            buildName,
+                                            () => fs.unlinkSync(buildName),
+                                            () => { },
+                                            () => {
+                                                fs.rename('./tmp/build.log', buildName, () => {
+                                                    cb();
+                                                    tasks.end();
+                                                });
+                                            }
+                                        );
+                                    })
+                                );
+                            });
+                            tasks.start();
                         });
-                    })
-                ),
-            () => { }
-            );
+                    },
+                    () => { }
+                );
+                res.send({
+                    build: 'queued...',
+                });
+            } else {
+                ifExists('./tmp/build.log',
+                    (content) => res.send({
+                        test: 'build is in progress',
+                        details: content
+                    }),
+                    () => { },
+                    () => { }
+                );
+            }
         });
 
         app.get('/', (req: express.Request, res: express.Response) => {
