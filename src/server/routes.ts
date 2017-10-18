@@ -11,6 +11,15 @@ function statPath(path) {
     return false;
 }
 
+function $when(value) {
+    if (value && ('then' in value)) {
+        return value;
+    }
+    return {
+        then: fn => fn(value)
+    };
+}
+
 const ifExists = (path, then, _else, next) => {
     var stat = statPath(path);
     var res;
@@ -19,7 +28,7 @@ const ifExists = (path, then, _else, next) => {
     } else {
         res = _else();
     }
-    return next(res);
+    return $when(res).then(r => next(r));
 }
 
 const writeEnv = callback => {
@@ -85,13 +94,15 @@ const buildChannel = (branch, build, then) => {
     )
     //.clone('git@github.com:RebelMouseTeam/runnereditor.git')
     .then(() => {
-        git('./tmp/runnereditor').checkout([branch],
-            yarnExec(['install'], (out, out2) => writeBuildLog(out + out2, () =>
-                writeEnv(() =>
-                    yarnExec([build], (out, out2) => writeBuildLog(out + out2, () => {
-                        then(out, out2);
-                    }))
-                ))
+        git('./tmp/runnereditor').checkout([branch], () =>
+            git('./tmp/runnereditor').pull().then(() =>
+                yarnExec(['install'], (out, out2) => writeBuildLog(out + out2, () =>
+                    writeEnv(() =>
+                        yarnExec([build], (out, out2) => writeBuildLog(out + out2, () => {
+                            then(out, out2);
+                        }))
+                    ))
+                )
             )
         );
     });
