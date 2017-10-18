@@ -123,7 +123,7 @@ export class Routes {
     paths(app: express.Application) {
 
         app.get('/api/deploy/:branch', (req: express.Request, res: express.Response, next: express.NextFunction) => {
-            var branch = req.query.branch;
+            var branch = req.params.branch;
             var build = ['build', (req.query.build || 'alpha')].join('-');
 
             ifExists('./tmp/build.log',
