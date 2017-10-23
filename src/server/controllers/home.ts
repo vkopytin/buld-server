@@ -15,28 +15,6 @@ function stripStdOut (str) {
     return ('' + res).replace(/[\b]+/g, '');
 }
 
-function statPath(path) {
-    try {
-        return fs.statSync(path);
-    } catch (ex) {}
-    return false;
-}
-
-async function $when(value) {
-    return await value;
-}
-
-const ifExists = (path, then, _else, next) => {
-    var stat = statPath(path);
-    var res;
-    if (stat && (stat.isDirectory() || stat.isFile())) {
-        res = then(stat.isFile() ? fs.readFileSync(path, 'utf8'): '');
-    } else {
-        res = _else();
-    }
-    return $when(res).then(r => next(r));
-}
-
 const writeEnv = async () => {
     return await fsWriteFile('./tmp/runnereditor/.env', `NODE_ENV=development
 APP_IP=0.0.0.0
