@@ -36,15 +36,20 @@ export class Routes {
         return _.find(controllers, (v, k) => k.toLowerCase() === name.toLowerCase());
     }
 
+    createController(req: express.Request, name: string) {
+        var ControllerCtor = this.findController(controllers, name);
+
+        return new ControllerCtor(req);
+    }
+
     paths(app: express.Application) {
 
         this.routes.forEach(routeMap => {
             var { path, defaults } = routeMap;
             app.get(path, (req: express.Request, res: express.Response, next: express.NextFunction) => {
                 var { controller, action } = _.extend({}, defaults, _.pick(req.params, 'controller', 'action'));
-                var ControllerCtor = this.findController(controllers, controller);
                 var params = _.defaults(req.params, defaults);
-                var controller = new ControllerCtor();
+                var controller = this.createController(req, controller);
                 var result = controller[action].call(controller, _.extend({}, params, req.query));
                 (async (result) => res.send(await result))(result);
             });

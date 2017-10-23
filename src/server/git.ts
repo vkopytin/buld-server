@@ -7,9 +7,9 @@ class Git {
         this.impl = git(path);
     }
 
-    clone (repositoryUrl) {
+    clone (path, repositoryUrl) {
         var res = new Promise((resolve, reject) => {
-            this.impl.clone(repositoryUrl, '', [], (err, res) => {
+            this.impl.clone(repositoryUrl, undefined, [], (err, res) => {
                 err && reject(err);
                 !err && resolve(res);
             });
@@ -42,7 +42,7 @@ class Git {
 
     static clone (path, repositoryUrl) {
         var res = new Promise((resolve, reject) => {
-            git(path).clone(repositoryUrl, '', [], (err, res) => {
+            git(path).clone(repositoryUrl, undefined, [], (err, res) => {
                 err && reject(err);
                 !err && resolve(res);
             });

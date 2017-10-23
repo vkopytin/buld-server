@@ -5,6 +5,7 @@ import fs = require('fs');
 import stripAnsi = require('strip-ansi');
 import queue = require('queue');
 
+const buildLogName = './tmp/build.log';
 
 var tasks = queue();
 
@@ -36,19 +37,57 @@ const ifExists = (path, then, _else, next) => {
     return $when(res).then(r => next(r));
 }
 
-const writeEnv = callback => {
-    fs.writeFile('./tmp/runnereditor/.env', `NODE_ENV=development
+const writeEnv = async () => {
+    return await fsWriteFile('./tmp/runnereditor/.env', `NODE_ENV=development
 APP_IP=0.0.0.0
 APP_PORT=3000
 BASE_URL=http://0.0.0.0:3000
 CDN=//static.rbl.ms/static/
 PROXY_TARGET=https://vkopytin-secure.rebelmouse.com/
 SESSIONID=lpylbgxlz3jprebjngrxf29lamhn8f96
-`, 'ascii', callback);    
+`);
 }
 
-const writeBuildLog = (content, callback) => {
-    fs.writeFile('./tmp/build.log', content, 'ascii', callback);  
+const writeBuildLog = async (content) => {
+    return await fsWriteFile(buildLogName, content);  
+}
+
+function fsExists(path: string) {
+    return new Promise((resolve, reject) => {
+        fs.stat(path, (err, stats) => {
+            if (err) {
+                return resolve(false);
+            }
+            if (stats && (stats.isDirectory() || stats.isFile())) {
+                return resolve(true);
+            }
+            return resolve(false);
+        });
+    });
+}
+
+const fsWriteFile = async (fullName, content) => {
+    return new Promise((resolve, reject) => {
+        fs.writeFile(fullName, content, 'ascii', (err) => {
+            err ? reject(err) : resolve(true);
+        });
+    });
+}
+
+const fsRename = async (oldPath, newPath) => {
+    return new Promise((resolve, reject) => {
+        fs.rename(oldPath, newPath, err => {
+            err ? reject(err) : resolve(true);
+        });
+    })
+}
+
+const fsReadFile = async (path) => {
+    return new Promise((resolve, reject) => {
+        fs.readFile(path, 'utf8', (err, data: string) => {
+            err ? reject(err) : resolve(data);
+        });
+    });
 }
 
 const yarnExec = (cmd: string[], then, options?) => {
@@ -63,11 +102,11 @@ const yarnExec = (cmd: string[], then, options?) => {
     };
     
     spawned.stdout.on('data', function (buffer) {
-        fs.appendFileSync('./tmp/build.log', stripStdOut(buffer.toString()));
+        fs.appendFileSync(buildLogName, stripStdOut(buffer.toString()));
         stdOut.push(buffer);
      });
     spawned.stderr.on('data', function (buffer) {
-        fs.appendFileSync('./tmp/build.log', stripStdOut(buffer.toString()));
+        fs.appendFileSync(buildLogName, stripStdOut(buffer.toString()));
         stdErr.push(buffer);
      });
 
@@ -93,94 +132,89 @@ const yarnExec = (cmd: string[], then, options?) => {
      });
 }
 
-const yarn = (cmd, options?) => {
+function yarn(cmd, options?) {
     return new Promise((resolve, reject) => {
         yarnExec(cmd, (err, res) => {
-            err && reject(err);
-            !err && resolve(res);
+            if (err) {
+                reject(err);
+            }
+            resolve(res);
         }, options);
     });
-}    
+}
 
-const buildChannel = async (branch, build, then) => {
-    await ifExists('./tmp/runnereditor',
-        () => { },
-        () => Git.clone('./tmp', 'git@github.com:RebelMouseTeam/runnereditor.git'),
-        () => { }
-    );
+const buildChannel = async (branch, build) => {
+    if (!await fsExists('./tmp/runnereditor')) {
+        await Git.clone('./tmp', 'git@github.com:RebelMouseTeam/runnereditor.git');
+    }
 
     var _git = new Git('./tmp/runnereditor');
     await _git.checkout([branch]);
     await _git.pull();
+
     var out = await yarn(['install']);
-    writeBuildLog(out, () =>
-        writeEnv(() =>
-            yarnExec([build], (out, out2) => writeBuildLog(out + out2, () => {
-                then(out, out2);
-            }))
-        ));
+    await writeBuildLog(out);
+
+    await writeEnv();
+
+    var out = await yarn([build]);
+    await writeBuildLog(out);
+
+    return out;
 }
 
-
+const copyFilesToFolder = (from, to) => {
+    
+}
 class Home {
+    request: any
+
+    constructor(req) {
+        this.request = req;
+    }
+
     index (params) {
         return {
             test: 'test'
         };
     }
 
-    deploy (params) {
-        var { branch, build, code } = params;
+    async deploy ({ branch, build, code }) {
         var buildCode = code || '';
         build = ['build', (build || 'alpha')].join('-');
         var buildName = './tmp/build-' + buildCode + '.log';
-        return new Promise((resolve, reject) => {
-            if (tasks.length === 0) {
-                ifExists(
-                    buildName,
-                    content => resolve({
-                        test: 'build is in progress',
-                        details: content
-                    }),
-                    () => {
-                        fs.writeFile(buildName, 'starting...\n', 'ascii', () => {
-                            tasks.push(cb => {
-                                writeBuildLog('starting...', () =>
-                                    buildChannel(branch, build, (out, out2) => {
-                                        ifExists(
-                                            buildName,
-                                            () => fs.unlinkSync(buildName),
-                                            () => { },
-                                            () => {
-                                                fs.rename('./tmp/build.log', buildName, () => {
-                                                    fs.appendFileSync(buildName, '\n\n\n...done!!!');
-                                                    cb();
-                                                    tasks.end();
-                                                });
-                                            }
-                                        );
-                                    })
-                                );
-                            });
-                            tasks.start();
-                            resolve({
-                                build: 'queued...',
-                            });
-                        });
-                    },
-                    () => { }
-                );
+        if (tasks.length === 0) {
+            if (await fsExists(buildName)) {
+                return {
+                    test: 'build is in progress',
+                    details: await fsReadFile(buildName)
+                };
             } else {
-                ifExists('./tmp/build.log',
-                    (content) => resolve({
-                        test: 'build is in progress',
-                        details: content
-                    }),
-                    () => { },
-                    () => { }
-                );
+                await fsWriteFile(buildName, 'starting...\n');
+                tasks.push(async cb => {
+                    await writeBuildLog('starting...');
+                    var out = await buildChannel(branch, build);
+                    if (await fsExists(buildName)) {
+                        fs.unlinkSync(buildName);
+                    }
+                    await fsRename(buildLogName, buildName);
+                    fs.appendFileSync(buildName, '\n\n\n...done!!!');
+                    cb();
+                    tasks.end();
+                });
+                tasks.start();
+                return {
+                    build: 'queued...',
+                };
             }
-        });
+        } else {
+            if (await fsExists(buildLogName)) {
+                return {
+                    test: 'build is in progress',
+                    details: await fsReadFile(buildLogName)
+                };
+            }
+        }
     }
 }
 
