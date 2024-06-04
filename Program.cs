@@ -65,9 +65,9 @@ builder.Services.AddAuthorization(options =>
 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
 {
   // this is my Authorization Server Port
-  options.Authority = "https://localhost:5000";
+  options.Authority = jwtIssuer;
   options.ClientId = "platformnet6";
-  options.ClientSecret = "qarxcmlxcahildalknv-qarxcmlxcahildalknv-qarxcmlxcahildalknv-123";
+  options.ClientSecret = jwtSecretKey;
   options.ResponseType = "code";
   options.CallbackPath = "/signin-oidc";
   options.SaveTokens = true;
