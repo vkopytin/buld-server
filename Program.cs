@@ -17,6 +17,7 @@ IdentityModelEventSource.ShowPII = true;
 var builder = WebApplication.CreateBuilder(args);
 var jwtSecretKey = builder.Configuration["JWT:SecretKey"] ?? throw new Exception("appsettings config error: JWT secret key is null");
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new Exception("appsettings config error: JWT issues is not specified");
+var clientId = builder.Configuration["JWT:ClientId"] ?? throw new Exception("appsettings ClientId must be specified");
 
 var apiCorsPolicy = "ApiCorsPolicy";
 builder.Services.AddCors(options =>
@@ -66,7 +67,7 @@ builder.Services.AddAuthorization(options =>
 {
   // this is my Authorization Server Port
   options.Authority = jwtIssuer;
-  options.ClientId = "platformnet6";
+  options.ClientId = clientId;
   options.ClientSecret = jwtSecretKey;
   options.ResponseType = "code";
   options.CallbackPath = "/signin-oidc";
