@@ -57,12 +57,29 @@ builder.Services.AddAuthorization(options =>
       )
     )
   );
-}).AddAuthentication(config =>
+})
+.AddAuthentication(config =>
 {
   config.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
   config.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+  //config.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+  //config.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
-.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+{
+  options.Events = new CookieAuthenticationEvents
+  {
+    // After the auth cookie has been validated, this event is called.
+    // In it we see if the access token is close to expiring.  If it is
+    // then we use the refresh token to get a new access token and save them.
+    // If the refresh token does not work for some reason then we redirect to 
+    // the login screen.
+    OnValidatePrincipal = async cookieCtx =>
+    {
+      Console.WriteLine(cookieCtx.Properties);
+    }
+  };
+})
 .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
 {
   // this is my Authorization Server Port
@@ -75,13 +92,32 @@ builder.Services.AddAuthorization(options =>
   options.UseSecurityTokenValidator = true;
   options.TokenValidationParameters = new TokenValidationParameters
   {
+    ValidateIssuer = false,
+    ValidateAudience = false,
     SignatureValidator = delegate (string token, TokenValidationParameters validationParameters)
     {
       var jwt = new JwtSecurityToken(token);
       return jwt;
     },
   };
+})
+.AddJwtBearer(opt =>
+{
+  // for development only
+  opt.Audience = builder.Configuration["JWT:Audience"];
+  opt.RequireHttpsMetadata = false;
+  opt.SaveToken = true;
+  opt.TokenValidationParameters = new TokenValidationParameters
+  {
+    //ValidAudience = builder.Configuration["JWT:Audience"],
+    ValidateAudience = false,
+    ValidateIssuer = true,
+    ValidIssuer = jwtIssuer,
+    ValidateIssuerSigningKey = true,
+    IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtSecretKey)),
+  };
 });
+
 builder.Services.AddHealthChecks();
 builder.Services.AddSingleton<IAuthorizationHandler, RequireScopeHandler>();
 

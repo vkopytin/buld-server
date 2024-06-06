@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +9,17 @@ namespace Controllers;
 [ApiController]
 public class HomeController : ControllerBase
 {
-  [Authorize("read:files")]
+  [Authorize(AuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)]
+  [HttpGet]
+  [ActionName("user-login")]
+  public IActionResult UserLogin()
+  {
+    return Ok(new { test = "test" });
+  }
+
+  [Authorize(
+    "read:files",
+    AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   [HttpGet]
   [ActionName("data")]
   public IActionResult Data()
@@ -15,7 +27,7 @@ public class HomeController : ControllerBase
     return Ok(new { test = "test" });
   }
 
-  [Authorize]
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   [HttpGet]
   [ActionName("index")]
   public IActionResult Index()
@@ -32,5 +44,12 @@ public class HomeController : ControllerBase
     }
 
     return Ok(claims);
+  }
+
+  [HttpGet]
+  [ActionName("public")]
+  public IActionResult Public()
+  {
+    return Ok(new { Test = "test" });
   }
 }
