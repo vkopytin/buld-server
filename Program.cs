@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
+using Auth.Db;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -11,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Services;
 
 IdentityModelEventSource.ShowPII = true;
 
@@ -37,6 +39,12 @@ builder.Services.AddCors(options =>
       ;
   });
 });
+var client = builder.Configuration.CreateMongoClient("MongoDBConnection");
+builder.Services.AddTransient(o =>
+{
+  return new MongoDbContext(client);
+});
+builder.Services.AddTransient<IProfileService, ProfileService>();
 builder.Services.AddHttpClient<IdmAccessTokenAuthSchemeHandler>();
 builder.Services.AddControllers();
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();

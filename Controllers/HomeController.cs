@@ -1,7 +1,10 @@
+using Auth.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Models;
+using Services;
 
 namespace Controllers;
 
@@ -9,6 +12,13 @@ namespace Controllers;
 [ApiController]
 public class HomeController : ControllerBase
 {
+  private readonly IProfileService profile;
+
+  public HomeController(IProfileService profile)
+  {
+    this.profile = profile;
+  }
+
   [Authorize(AuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)]
   [HttpGet]
   [ActionName("user-login")]
@@ -21,10 +31,56 @@ public class HomeController : ControllerBase
     "read:files",
     AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   [HttpGet]
-  [ActionName("data")]
-  public IActionResult Data()
+  [ActionName("list-clients")]
+  public async Task<IActionResult> ListClients()
   {
-    return Ok(new { test = "test" });
+    var (authClients, err) = await profile.ListClients();
+
+    return Ok(authClients);
+  }
+
+  [Authorize(
+    "read:files",
+    AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpPost]
+  [ActionName("create-client")]
+  public async Task<IActionResult> CreateClient([FromBody] ClientToSave request)
+  {
+    var client = request.ToModel();
+    var (authClient, err) = await profile.AddClient(client);
+
+    return Ok(authClient);
+  }
+
+  [Authorize(
+    "read:files",
+    AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpPut]
+  [ActionName("save-client")]
+  public async Task<IActionResult> SaveClient([FromBody] ClientToSave request)
+  {
+    var client = request.ToModel();
+
+    var (authClient, err) = await profile.SaveClient(client);
+
+    return Ok(authClient);
+  }
+
+  [Authorize(
+    "read:files",
+    AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpGet("{clientId}")]
+  [ActionName("client")]
+  public async Task<IActionResult> GetClient(string clientId)
+  {
+    var (client, err) = await profile.GetClient(clientId);
+
+    if (client is null)
+    {
+      return NotFound(err);
+    }
+
+    return Ok(client);
   }
 
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
