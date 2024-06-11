@@ -1,15 +1,11 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using System.Text.Json;
 using Auth.Db;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Services;
@@ -31,7 +27,8 @@ builder.Services.AddCors(options =>
       .WithOrigins(
         "http://local-dev.azurewebsites.net:4200", "http://localhost:4200", "http://dev.local:4200",
         "https://local-dev.azurewebsites.net:4200", "https://localhost:4200", "https://dev.local:4200",
-        "https://local-dev.azurewebsites.net", "https://localhost", "https://dev.local"
+        "https://local-dev.azurewebsites.net", "https://localhost", "https://dev.local",
+        "https://vko-idm.azurewebsites.net/"
       )
       .AllowAnyHeader()
       .AllowAnyMethod()
