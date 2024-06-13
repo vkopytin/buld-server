@@ -49,4 +49,35 @@ public static class ProfileExtentions
       IsActive = client.IsActive
     };
   }
+
+  public static AuthUser ToModel(this UserToSave user)
+  {
+    return new(
+      UserName: user.UserName,
+      Name: user.Name,
+      Role: user.Role,
+      IsActive: user.IsActive
+    );
+  }
+
+  public static AuthUser ToModel(this User user)
+  {
+    return new(
+      UserName: user.UserName,
+      Name: user.Name,
+      Role: user.Role,
+      IsActive: user.IsActive
+    );
+  }
+
+  public static User ToDataModel(this AuthUser user)
+  {
+    return new()
+    {
+      UserName = user.UserName,
+      Name = user.Name ?? string.Empty,
+      Role = user.Role,
+      IsActive = user.IsActive
+    };
+  }
 }

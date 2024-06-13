@@ -83,6 +83,62 @@ public class HomeController : ControllerBase
     return Ok(client);
   }
 
+  [Authorize(
+  "read:files",
+  AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpGet]
+  [ActionName("list-users")]
+  public async Task<IActionResult> ListUsers()
+  {
+    var (authUsers, err) = await profile.ListUsers();
+
+    return Ok(authUsers);
+  }
+
+  [Authorize(
+    "read:files",
+    AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpPost]
+  [ActionName("create-user")]
+  public async Task<IActionResult> CreateUser([FromBody] UserToSave request)
+  {
+    var user = request.ToModel();
+    var (authUser, err) = await profile.AddUser(user);
+
+    return Ok(authUser);
+  }
+
+  [Authorize(
+    "read:files",
+    AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpPut]
+  [ActionName("save-user")]
+  public async Task<IActionResult> SaveUser([FromBody] UserToSave request)
+  {
+    var user = request.ToModel();
+
+    var (authUser, err) = await profile.SaveUser(user);
+
+    return Ok(authUser);
+  }
+
+  [Authorize(
+    "read:user-info",
+    AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpGet("{userId}")]
+  [ActionName("user")]
+  public async Task<IActionResult> GetUser(string userId)
+  {
+    var (user, err) = await profile.GetUser(userId);
+
+    if (user is null)
+    {
+      return NotFound(err);
+    }
+
+    return Ok(user);
+  }
+
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   [HttpGet]
   [ActionName("index")]

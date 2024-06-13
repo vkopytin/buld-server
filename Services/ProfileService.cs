@@ -56,26 +56,86 @@ public class ProfileService : IProfileService
 
   public async Task<(AuthClient?, ProfileError?)> SaveClient(AuthClient client)
   {
-    var existing = await dbContext.AuthClients.Where(c => c.ClientId == client.ClientId)
+    var existingClient = await dbContext.AuthClients.Where(c => c.ClientId == client.ClientId)
       .Take(1)
       .FirstOrDefaultAsync();
 
-    if (existing is null)
+    if (existingClient is null)
     {
-      return (null, new(Message: "Can't update client. Client doesn't exists."));
+      return (null, new(Message: "Can't update client. Client doesn't exist."));
     }
 
-    existing.ClientId = client.ClientId;
-    existing.ClientName = client.ClientName;
-    existing.ClientSecret = client.ClientSecret;
-    existing.GrantType = client.GrantType;
-    existing.AllowedScopes = client.AllowedScopes;
-    existing.ClientUri = client.ClientUri;
-    existing.RedirectUri = client.RedirectUri;
-    existing.IsActive = client.IsActive;
+    existingClient.ClientId = client.ClientId;
+    existingClient.ClientName = client.ClientName;
+    existingClient.ClientSecret = client.ClientSecret;
+    existingClient.GrantType = client.GrantType;
+    existingClient.AllowedScopes = client.AllowedScopes;
+    existingClient.ClientUri = client.ClientUri;
+    existingClient.RedirectUri = client.RedirectUri;
+    existingClient.IsActive = client.IsActive;
 
     await dbContext.SaveChangesAsync();
 
-    return (existing.ToModel(), null);
+    return (existingClient.ToModel(), null);
+  }
+
+  public async Task<(AuthUser[]?, ProfileError?)> ListUsers(int from = 0, int limit = 10)
+  {
+    var users = await dbContext.Users
+      .Skip(from).Take(limit)
+      .ToArrayAsync();
+
+    return (users.Select(c => c.ToModel()).ToArray(), null);
+  }
+
+  public async Task<(AuthUser?, ProfileError?)> GetUser(string userName)
+  {
+    var user = await dbContext.Users.Where(c => c.UserName == userName)
+      .Take(1)
+      .FirstOrDefaultAsync();
+
+    if (user is null)
+    {
+      return (null, new(Message: $"User with username: {userName} doesn't exist"));
+    }
+
+    return (user.ToModel(), null);
+  }
+
+  public async Task<(AuthUser?, ProfileError?)> AddUser(AuthUser user)
+  {
+    var exists = await dbContext.Users.AnyAsync(c => c.UserName == user.UserName);
+
+    if (exists)
+    {
+      return (null, new(Message: "Can't create. User with same username exists"));
+    }
+
+    await dbContext.Users.AddAsync(user.ToDataModel());
+
+    await dbContext.SaveChangesAsync();
+
+    return (user, null);
+  }
+
+  public async Task<(AuthUser?, ProfileError?)> SaveUser(AuthUser user)
+  {
+    var existingUser = await dbContext.Users.Where(c => c.UserName == user.UserName)
+      .Take(1)
+      .FirstOrDefaultAsync();
+
+    if (existingUser is null)
+    {
+      return (null, new(Message: "Can't update user. User doesn't exist."));
+    }
+
+    existingUser.UserName = user.UserName;
+    existingUser.Name = user.Name ?? string.Empty;
+    existingUser.Role = user.Role;
+    existingUser.IsActive = user.IsActive;
+
+    await dbContext.SaveChangesAsync();
+
+    return (existingUser.ToModel(), null);
   }
 }
