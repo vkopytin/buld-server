@@ -3,7 +3,8 @@ namespace Models;
 public record UserToSave
 (
   string UserName,
-  string? Name,
+  string? Password,
   string Role,
+  string? Name,
   bool IsActive
 );

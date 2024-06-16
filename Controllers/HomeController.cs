@@ -1,7 +1,9 @@
+using System.Net;
 using Auth.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Services;
@@ -13,10 +15,12 @@ namespace Controllers;
 public class HomeController : ControllerBase
 {
   private readonly IProfileService profile;
+  private readonly IArticlesService articles;
 
-  public HomeController(IProfileService profile)
+  public HomeController(IProfileService profile, IArticlesService articles)
   {
     this.profile = profile;
+    this.articles = articles;
   }
 
   [Authorize(AuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)]
@@ -35,6 +39,10 @@ public class HomeController : ControllerBase
   public async Task<IActionResult> ListClients()
   {
     var (authClients, err) = await profile.ListClients();
+    if (authClients is null)
+    {
+      return BadRequest(err);
+    }
 
     return Ok(authClients);
   }
@@ -48,8 +56,12 @@ public class HomeController : ControllerBase
   {
     var client = request.ToModel();
     var (authClient, err) = await profile.AddClient(client);
+    if (authClient is null)
+    {
+      return BadRequest(err);
+    }
 
-    return Ok(authClient);
+    return StatusCode(StatusCodes.Status201Created, authClient);
   }
 
   [Authorize(
@@ -62,6 +74,10 @@ public class HomeController : ControllerBase
     var client = request.ToModel();
 
     var (authClient, err) = await profile.SaveClient(client);
+    if (authClient is null)
+    {
+      return BadRequest(err);
+    }
 
     return Ok(authClient);
   }
@@ -92,6 +108,11 @@ public class HomeController : ControllerBase
   {
     var (authUsers, err) = await profile.ListUsers();
 
+    if (authUsers is null)
+    {
+      return BadRequest(err);
+    }
+
     return Ok(authUsers);
   }
 
@@ -105,7 +126,12 @@ public class HomeController : ControllerBase
     var user = request.ToModel();
     var (authUser, err) = await profile.AddUser(user);
 
-    return Ok(authUser);
+    if (authUser is null)
+    {
+      return BadRequest(err);
+    }
+
+    return StatusCode(StatusCodes.Status201Created, authUser);
   }
 
   [Authorize(
@@ -118,6 +144,11 @@ public class HomeController : ControllerBase
     var user = request.ToModel();
 
     var (authUser, err) = await profile.SaveUser(user);
+
+    if (authUser is null)
+    {
+      return BadRequest(err);
+    }
 
     return Ok(authUser);
   }
@@ -163,5 +194,20 @@ public class HomeController : ControllerBase
   public IActionResult Public()
   {
     return Ok(new { Test = "test" });
+  }
+
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpGet]
+  [ActionName("list-articles")]
+  public async Task<IActionResult> ListArticles(int from = 0, int limit = 20)
+  {
+    var (articles, err) = await this.articles.ListArticles(from, limit);
+
+    if (articles is null)
+    {
+      return BadRequest(err);
+    }
+
+    return Ok(articles);
   }
 }
