@@ -16,11 +16,13 @@ public class HomeController : ControllerBase
 {
   private readonly IProfileService profile;
   private readonly IArticlesService articles;
+  private readonly IWebSitesService webSites;
 
-  public HomeController(IProfileService profile, IArticlesService articles)
+  public HomeController(IProfileService profile, IArticlesService articles, IWebSitesService webSites)
   {
     this.profile = profile;
     this.articles = articles;
+    this.webSites = webSites;
   }
 
   [Authorize(AuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)]
@@ -209,5 +211,20 @@ public class HomeController : ControllerBase
     }
 
     return Ok(articles);
+  }
+
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpGet]
+  [ActionName("list-websites")]
+  public async Task<IActionResult> ListWebSites(int from = 0, int limit = 20)
+  {
+    var (webSites, err) = await this.webSites.ListWebSites(from, limit);
+
+    if (webSites is null)
+    {
+      return BadRequest(err);
+    }
+
+    return Ok(webSites);
   }
 }

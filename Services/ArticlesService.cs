@@ -15,13 +15,18 @@ public class ArticlesService : IArticlesService
     this.dbContext = dbContext;
   }
 
-  public async Task<(ArticleModel[]? articles, ServiceError? err)> ListArticles(int from = 0, int limit = 20)
+  public Task<(ArticleModel[]? articles, ServiceError? err)> ListArticles(int from = 0, int limit = 20)
   {
-    var articles = await dbContext.Articles
-      .OrderByDescending(a => a.CreatedAt)
-      .Skip(from).Take(limit)
-      .ToArrayAsync();
+    var query = from a in dbContext.Articles.AsEnumerable()
+                join m in dbContext.ArticleBlocks
+                  on a.MediaId equals m.Id into mleft
+                from sub in mleft.DefaultIfEmpty()
+                orderby a.CreatedAt descending
+                select a;
+    var articles = query.Skip(from).Take(limit).ToArray();
 
-    return (articles.Select(a => a.ToModel()).ToArray(), null);
+    return Task.FromResult<(ArticleModel[]?, ServiceError?)>(
+      (articles.Select(a => a.ToModel()).ToArray(), null)
+    );
   }
 }

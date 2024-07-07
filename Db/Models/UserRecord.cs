@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
-namespace Auth.Db.Models;
+namespace Auth.Db.Records;
 
-public class User
+public class UserRecord
 {
   [Key]
   public ObjectId Id { get; set; }

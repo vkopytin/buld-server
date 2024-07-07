@@ -2,6 +2,7 @@ using Auth.Db;
 using Auth.Models;
 using Errors;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver.Linq;
 
 namespace Services;
@@ -9,10 +10,12 @@ namespace Services;
 public class ProfileService : IProfileService
 {
   private readonly MongoDbContext dbContext;
+  private readonly ILogger logger;
 
-  public ProfileService(MongoDbContext dbContext)
+  public ProfileService(MongoDbContext dbContext, ILogger<ProfileService> logger)
   {
     this.dbContext = dbContext;
+    this.logger = logger;
   }
 
   public async Task<(AuthClient[]?, ProfileError?)> ListClients(int from = 0, int limit = 10)
@@ -26,16 +29,24 @@ public class ProfileService : IProfileService
 
   public async Task<(AuthClient?, ProfileError?)> GetClient(string clientId)
   {
-    var client = await dbContext.AuthClients.Where(c => c.ClientId == clientId)
-      .Take(1)
-      .FirstOrDefaultAsync();
-
-    if (client is null)
+    try
     {
-      return (null, new(Message: $"Client with id: {clientId} doesn't exist"));
-    }
+      var client = await dbContext.AuthClients.Where(c => c.ClientId == clientId)
+        .Take(1)
+        .FirstOrDefaultAsync();
 
-    return (client.ToModel(), null);
+      if (client is null)
+      {
+        return (null, new(Message: $"Client with id: {clientId} doesn't exist"));
+      }
+
+      return (client.ToModel(), null);
+    }
+    catch (Exception ex)
+    {
+      this.logger.LogError(ex, "Error, while fetching clients from DB");
+      return (null, new(Message: ex.Message));
+    }
   }
 
   public async Task<(AuthClient?, ProfileError?)> AddClient(AuthClient client)

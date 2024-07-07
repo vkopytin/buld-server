@@ -3,18 +3,17 @@ using Models;
 
 namespace Services;
 
-public static class ArticlesExtentions
+public static class ArticleBlockExtentions
 {
-  public static ArticleModel ToModel(this ArticleRecord record)
+  public static ArticleBlockModel ToModel(this ArticleBlockRecord record)
   {
     return new(
       Id: record.Id,
       Title: record.Title,
       Description: record.Description,
-      CreatedAt: record.CreatedAt,
-      MediaId: record.MediaId,
       Origin: record.Origin,
-      Media: record.Media?.ToModel()
+      SourceUrl: record.SourceUrl,
+      FileName: record.FileName
     );
   }
 }

@@ -5,5 +5,8 @@ public record ArticleModel
   Guid Id,
   string? Title,
   string? Description,
-  DateTime CreatedAt
+  DateTime CreatedAt,
+  int MediaId,
+  string? Origin,
+  ArticleBlockModel? Media
 );

@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
 
-namespace Auth.Db.Models;
+namespace Auth.Db.Records;
 
-public class Client
+public class ClientRecord
 {
     [Key]
     public ObjectId Id { get; set; }

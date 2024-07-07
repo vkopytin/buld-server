@@ -43,6 +43,7 @@ builder.Services.AddTransient(o =>
 });
 builder.Services.AddTransient<IProfileService, ProfileService>();
 builder.Services.AddTransient<IArticlesService, ArticlesService>();
+builder.Services.AddTransient<IWebSitesService, WebSitesService>();
 builder.Services.AddHttpClient<IdmAccessTokenAuthSchemeHandler>();
 builder.Services.AddControllers();
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();

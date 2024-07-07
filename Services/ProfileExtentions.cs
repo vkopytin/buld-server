@@ -1,4 +1,4 @@
-using Auth.Db.Models;
+using Auth.Db.Records;
 using Auth.Models;
 using Models;
 
@@ -6,7 +6,7 @@ namespace Services;
 
 public static class ProfileExtentions
 {
-  public static AuthClient ToModel(this Client client)
+  public static AuthClient ToModel(this ClientRecord client)
   {
     return new AuthClient(
       client.ClientId,
@@ -35,7 +35,7 @@ public static class ProfileExtentions
     );
   }
 
-  public static Client ToDataModel(this AuthClient client)
+  public static ClientRecord ToDataModel(this AuthClient client)
   {
     return new()
     {
@@ -60,7 +60,7 @@ public static class ProfileExtentions
     );
   }
 
-  public static AuthUser ToModel(this User user)
+  public static AuthUser ToModel(this UserRecord user)
   {
     return new(
       UserName: user.UserName,
@@ -70,7 +70,7 @@ public static class ProfileExtentions
     );
   }
 
-  public static User ToDataModel(this AuthUser user)
+  public static UserRecord ToDataModel(this AuthUser user)
   {
     return new()
     {
