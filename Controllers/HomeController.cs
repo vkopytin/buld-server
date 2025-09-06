@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -38,7 +39,9 @@ public class HomeController : ControllerBase
   [ActionName("list-clients")]
   public async Task<IActionResult> ListClients()
   {
-    var (authClients, err) = await profile.ListClients();
+    var securityGroupId = User.FindFirst("oid").Value;
+
+    var (authClients, err) = await profile.ListClients(securityGroupId);
     if (authClients is null)
     {
       return BadRequest(err);

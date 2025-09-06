@@ -1,6 +1,7 @@
 using Auth.Db.Records;
 using Auth.Models;
 using Models;
+using MongoDB.Bson;
 
 namespace Services;
 
@@ -12,6 +13,7 @@ public static class ProfileExtentions
       client.ClientId,
       client.ClientName,
       client.ClientSecret,
+      client.SecurityGroupId.ToString(),
       client.GrantType ?? [],
       client.AllowedScopes ?? [],
       client.ClientUri,
@@ -27,6 +29,7 @@ public static class ProfileExtentions
       ClientId: request.ClientId,
       ClientName: request.ClientName,
       ClientSecret: request.ClientSecret,
+      SecurityGroupId: request.SecurityGroupId,
       GrantType: request.GrantType,
       AllowedScopes: request.AllowedScopes,
       ClientUri: request.ClientUri,
@@ -42,6 +45,7 @@ public static class ProfileExtentions
       ClientId = client.ClientId,
       ClientName = client.ClientName,
       ClientSecret = client.ClientSecret,
+      SecurityGroupId = client.SecurityGroupId is null ? null : ObjectId.Parse(client.SecurityGroupId),
       GrantType = client.GrantType,
       AllowedScopes = client.AllowedScopes,
       ClientUri = client.ClientUri,

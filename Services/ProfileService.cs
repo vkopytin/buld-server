@@ -18,9 +18,11 @@ public class ProfileService : IProfileService
     this.logger = logger;
   }
 
-  public async Task<(AuthClient[]?, ProfileError?)> ListClients(int from = 0, int limit = 10)
+  public async Task<(AuthClient[]?, ProfileError?)> ListClients(string securityGroupId, int from = 0, int limit = 10)
   {
+    var securityGroupIdObjId = MongoDB.Bson.ObjectId.Parse(securityGroupId);
     var clients = await dbContext.AuthClients
+      .Where(c => c.SecurityGroupId == securityGroupIdObjId)
       .Skip(from).Take(limit)
       .ToArrayAsync();
 

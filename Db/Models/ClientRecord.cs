@@ -10,6 +10,7 @@ public class ClientRecord
     public string? ClientId { get; set; }
     public string? ClientName { get; set; }
     public string? ClientSecret { get; set; }
+    public MongoDB.Bson.ObjectId? SecurityGroupId { get; set; }
     public string[]? GrantType { get; set; }
     public string[]? AllowedScopes { get; set; }
     public string? ClientUri { get; set; }
