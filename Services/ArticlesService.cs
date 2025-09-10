@@ -15,7 +15,7 @@ public class ArticlesService : IArticlesService
     this.dbContext = dbContext;
   }
 
-  public Task<(ArticleModel[]? articles, ServiceError? err)> ListArticles(int from = 0, int limit = 20)
+  public async Task<(ArticleModel[]? articles, ServiceError? err)> ListArticles(int from = 0, int limit = 20)
   {
     var query = from a in dbContext.Articles.AsEnumerable()
                 join m in dbContext.ArticleBlocks
@@ -23,10 +23,9 @@ public class ArticlesService : IArticlesService
                 from sub in mleft.DefaultIfEmpty()
                 orderby a.CreatedAt descending
                 select a;
-    var articles = query.Skip(from).Take(limit).ToArray();
 
-    return Task.FromResult<(ArticleModel[]?, ServiceError?)>(
-      (articles.Select(a => a.ToModel()).ToArray(), null)
-    );
+    var articles = query.Skip(from).Take(limit).Select(a => a.ToModel()).ToArray();
+
+    return (articles, null);
   }
 }

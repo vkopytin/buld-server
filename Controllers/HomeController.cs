@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Models;
 using Services;
+using Utils;
 
 namespace Controllers;
 
@@ -39,8 +40,7 @@ public class HomeController : ControllerBase
   [ActionName("list-clients")]
   public async Task<IActionResult> ListClients()
   {
-    var securityGroupId = User.FindFirst("oid").Value;
-
+    var securityGroupId = User.GetOid();
     var (authClients, err) = await profile.ListClients(securityGroupId);
     if (authClients is null)
     {
