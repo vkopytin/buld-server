@@ -76,8 +76,8 @@ public class HomeController : ControllerBase
   public async Task<IActionResult> SaveClient([FromBody] ClientToSave request)
   {
     var client = request.ToModel();
-
-    var (authClient, err) = await profile.SaveClient(client);
+    var securityGroupId = User.GetOid();
+    var (authClient, err) = await profile.SaveClient(securityGroupId, client);
     if (authClient is null)
     {
       return BadRequest(err);
