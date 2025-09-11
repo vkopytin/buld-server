@@ -93,6 +93,9 @@ public class HomeController : ControllerBase
   [ActionName("client")]
   public async Task<IActionResult> GetClient(string clientId)
   {
+    // rough implementation
+    // toDO: imrpove over relevant scope check
+    var securityGroupId = this.User.FindFirst("oid")?.Value;
     var (client, err) = await profile.GetClient(clientId);
 
     if (client is null)
@@ -100,7 +103,17 @@ public class HomeController : ControllerBase
       return NotFound(err);
     }
 
-    return Ok(client);
+    if (string.IsNullOrEmpty(client.SecurityGroupId))
+    {
+      return Ok(client);
+    }
+
+    if (client.SecurityGroupId == securityGroupId)
+    {
+      return Ok(client);
+    }
+
+    return Forbid();
   }
 
   [Authorize(
