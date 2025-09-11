@@ -103,7 +103,7 @@ public class HomeController : ControllerBase
       return NotFound(err);
     }
 
-    if (string.IsNullOrEmpty(client.SecurityGroupId))
+    if (string.IsNullOrEmpty(securityGroupId))
     {
       return Ok(client);
     }
