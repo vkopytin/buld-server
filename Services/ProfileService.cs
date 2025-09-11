@@ -51,7 +51,7 @@ public class ProfileService : IProfileService
     }
   }
 
-  public async Task<(AuthClient?, ProfileError?)> AddClient(AuthClient client)
+  public async Task<(AuthClient?, ProfileError?)> AddClient(string securityGroupId, AuthClient client)
   {
     var exists = await dbContext.AuthClients.AnyAsync(c => c.ClientId == client.ClientId);
 
@@ -60,18 +60,20 @@ public class ProfileService : IProfileService
       return (null, new(Message: "Can't create. Client with same id exists"));
     }
 
-    await dbContext.AuthClients.AddAsync(client.ToDataModel());
+    var record = client.ToDataModel();
+    record.SecurityGroupId = MongoDB.Bson.ObjectId.Parse(securityGroupId);
+    await dbContext.AuthClients.AddAsync(record);
 
     await dbContext.SaveChangesAsync();
 
-    return (client, null);
+    return (record.ToModel(), null);
   }
 
-  public async Task<(AuthClient?, ProfileError?)> SaveClient(AuthClient client)
+  public async Task<(AuthClient?, ProfileError?)> SaveClient(string securityGroupId, AuthClient client)
   {
-    var existingClient = await dbContext.AuthClients.Where(c => c.ClientId == client.ClientId)
-      .Take(1)
-      .FirstOrDefaultAsync();
+    var existingClient = await dbContext.AuthClients.Where(
+      c => c.ClientId == client.ClientId && c.SecurityGroupId == MongoDB.Bson.ObjectId.Parse(securityGroupId)
+    ).Take(1).FirstOrDefaultAsync();
 
     if (existingClient is null)
     {
