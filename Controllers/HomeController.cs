@@ -53,6 +53,18 @@ public class HomeController : ControllerBase
   [Authorize(
     "read:files",
     AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpGet]
+  [ActionName("list-thirdparty-clients")]
+  public async Task<IActionResult> ListThirdpartyClients()
+  {
+    await Task.CompletedTask;
+
+    return BadRequest("Not implemented");
+  }
+
+  [Authorize(
+    "read:files",
+    AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   [HttpPost]
   [ActionName("create-client")]
   public async Task<IActionResult> CreateClient([FromBody] ClientToSave request)
