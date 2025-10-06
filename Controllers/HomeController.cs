@@ -54,8 +54,8 @@ public class HomeController : ControllerBase
     "read:files",
     AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   [HttpGet]
-  [ActionName("list-thirdparty-clients")]
-  public async Task<IActionResult> ListThirdpartyClients()
+  [ActionName("list-connected-apps")]
+  public async Task<IActionResult> ListConnectedApps()
   {
     await Task.CompletedTask;
 
