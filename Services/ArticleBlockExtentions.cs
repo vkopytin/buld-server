@@ -1,4 +1,4 @@
-using Auth.Db.Records;
+using Account.Db.Records;
 using Models;
 
 namespace Services;

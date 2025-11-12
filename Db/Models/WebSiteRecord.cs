@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using MongoDB.Bson;
 using Repository;
 
-namespace Auth.Db.Records;
+namespace Account.Db.Records;
 
 [Table("WebSite")]
 public class WebSiteRecord : BaseEntity<Guid>

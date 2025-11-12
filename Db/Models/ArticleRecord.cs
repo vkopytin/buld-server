@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using Repository;
 
-namespace Auth.Db.Records;
+namespace Account.Db.Records;
 
 [Table("Article")]
 public class ArticleRecord : BaseEntity<Guid>

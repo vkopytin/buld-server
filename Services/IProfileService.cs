@@ -1,3 +1,4 @@
+using Account.Db.Records;
 using Auth.Models;
 using Errors;
 
@@ -14,4 +15,5 @@ public interface IProfileService
   Task<(AuthUser?, ProfileError?)> GetUser(string userId);
   Task<(AuthUser?, ProfileError?)> AddUser(AuthUser user);
   Task<(AuthUser?, ProfileError?)> SaveUser(AuthUser user);
+  Task<(RoleRecord[]?, ProfileError?)> ListRoles(int from = 0, int limit = 10);
 }

@@ -133,9 +133,9 @@ public class HomeController : ControllerBase
   AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   [HttpGet]
   [ActionName("list-users")]
-  public async Task<IActionResult> ListUsers()
+  public async Task<IActionResult> ListUsers(int from = 0, int limit = 10)
   {
-    var (authUsers, err) = await profile.ListUsers();
+    var (authUsers, err) = await profile.ListUsers(from, limit);
 
     if (authUsers is null)
     {
@@ -253,5 +253,20 @@ public class HomeController : ControllerBase
     }
 
     return Ok(webSites);
+  }
+
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpGet]
+  [ActionName("list-roles")]
+  public async Task<IActionResult> ListRoles(int from = 0, int limit = 10)
+  {
+    var (roles, err) = await profile.ListRoles(from, limit);
+
+    if (roles is null)
+    {
+      return BadRequest(err);
+    }
+
+    return Ok(roles);
   }
 }

@@ -1,4 +1,5 @@
-using Auth.Db;
+using Account.Db;
+using Account.Db.Records;
 using Auth.Models;
 using Errors;
 using Microsoft.EntityFrameworkCore;
@@ -152,5 +153,14 @@ public class ProfileService : IProfileService
     await dbContext.SaveChangesAsync();
 
     return (existingUser.ToModel(), null);
+  }
+
+  public async Task<(RoleRecord[]?, ProfileError?)> ListRoles(int from = 0, int limit = 10)
+  {
+    var roles = await dbContext.Roles
+      .Skip(from).Take(limit)
+      .ToArrayAsync();
+
+    return (roles, null);
   }
 }

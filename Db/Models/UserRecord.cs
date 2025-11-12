@@ -1,8 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 
-namespace Auth.Db.Records;
+namespace Account.Db.Records;
 
 public class UserRecord
 {

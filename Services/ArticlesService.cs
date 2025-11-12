@@ -1,4 +1,4 @@
-using Auth.Db;
+using Account.Db;
 using Errors;
 using Microsoft.EntityFrameworkCore;
 using Models;
