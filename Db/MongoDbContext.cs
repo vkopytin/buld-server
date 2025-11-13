@@ -27,6 +27,7 @@ public class MongoDbContext : DbContext
     base.OnModelCreating(modelBuilder);
     modelBuilder.Entity<CategoryRecord>().ToCollection("categories");
     modelBuilder.Entity<UserRecord>().ToCollection("users");
+    modelBuilder.Entity<RoleRecord>().ToCollection("roles");
     modelBuilder.Entity<ClientRecord>().ToCollection("authClients");
     modelBuilder.Entity<ArticleRecord>().ToCollection("articles");
     modelBuilder.Entity<WebSiteRecord>().ToCollection("webSites");
@@ -34,5 +35,6 @@ public class MongoDbContext : DbContext
     modelBuilder.Entity<WebSiteArticleRecord>().ToCollection("webSiteArticles");
 
     modelBuilder.Entity<ArticleRecord>().HasOne(a => a.Media);
+    modelBuilder.Entity<RoleRecord>().HasIndex(r => r.RoleName).IsUnique();
   }
 }

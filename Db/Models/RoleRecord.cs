@@ -1,12 +1,11 @@
 using System.ComponentModel.DataAnnotations;
-using MongoDB.Bson.Serialization.Attributes;
+using Microsoft.EntityFrameworkCore;
+using Repository;
 
 namespace Account.Db.Records;
 
-public class RoleRecord
+public class RoleRecord : BaseEntity<Guid>
 {
-  [Key]
-  [BsonId]
   public string RoleName { get; set; } = "";
   public int Permissions { get; set; } = 0; // Value from enum RolePermissions
 }
