@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Account.Db;
+using Account.Db.Records;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -301,5 +302,57 @@ public class HomeController : ControllerBase
       .ToArray();
 
     return Ok(resources);
+  }
+
+  public record RoleToCreate(
+    string RoleName,
+    WorkflowResource WorkflowId
+  );
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpPost]
+  [ActionName("create-role")]
+  public async Task<IActionResult> CreateRole([FromBody] RoleToCreate request)
+  {
+    var resource = new RoleRecord
+    {
+      RoleName = request.RoleName,
+      Resource = request.WorkflowId,
+      Permissions = 0
+    };
+
+    var (res, err) = await profile.CreateRole(resource);
+    if (res is null)
+    {
+      return BadRequest(err);
+    }
+
+    return Ok(res);
+  }
+
+  public record RoleToUpdate(
+    Guid Id,
+    string RoleName,
+    WorkflowResource Resource,
+    int Permissions
+  );
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpPut]
+  [ActionName("update-role")]
+  public async Task<IActionResult> UpdateRole([FromBody] RoleToUpdate request)
+  {
+    var role = new RoleRecord
+    {
+      Id = request.Id,
+      RoleName = request.RoleName,
+      Resource = request.Resource,
+      Permissions = request.Permissions
+    };
+    var (res, err) = await profile.UpdateRole(role);
+    if (res is null)
+    {
+      return BadRequest(err);
+    }
+
+    return Ok(res);
   }
 }

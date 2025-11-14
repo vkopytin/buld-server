@@ -171,14 +171,53 @@ public class ProfileService : IProfileService
   public async Task<(object[], ProfileError?)> ListRoles()
   {
     var roles = dbContext.Roles
-    .Select(r => new
-    {
-      RoleName = r.RoleName,
-      Resource = r.Resource,
-      Permissions = (RolePermissions)r.Permissions
-    })
-    .ToArrayAsync();
+      .ToArrayAsync();
 
-    return (await roles as object[], default(ProfileError));
+    return (await roles, default);
+  }
+
+  public async Task<(RoleRecord?, ProfileError?)> CreateRole(RoleRecord role)
+  {
+    try
+    {
+      role.CreatedAt = DateTime.UtcNow;
+      await dbContext.Roles.AddAsync(role);
+      await dbContext.SaveChangesAsync();
+    }
+    catch (Exception ex)
+    {
+      this.logger.LogError(ex, "Error, while creating role in DB");
+      return (null, new(Message: ex.Message));
+    }
+
+    return (role, default);
+  }
+
+  public async Task<(RoleRecord?, ProfileError?)> UpdateRole(RoleRecord role)
+  {
+    try
+    {
+      var existingRole = await dbContext.Roles
+        .Where(r => r.RoleName == role.RoleName)
+        .Take(1)
+        .FirstOrDefaultAsync();
+
+      if (existingRole is null)
+      {
+        return (null, new(Message: "Role doesn't exist"));
+      }
+
+      existingRole.Resource = role.Resource;
+      existingRole.Permissions = role.Permissions;
+
+      await dbContext.SaveChangesAsync();
+    }
+    catch (Exception ex)
+    {
+      this.logger.LogError(ex, "Error, while updating role in DB");
+      return (null, new(Message: ex.Message));
+    }
+
+    return (role, default);
   }
 }

@@ -36,6 +36,6 @@ public partial class MongoDbContext : DbContext
     modelBuilder.Entity<WebSiteArticleRecord>().ToCollection("webSiteArticles");
 
     modelBuilder.Entity<ArticleRecord>().HasOne(a => a.Media);
-    modelBuilder.Entity<RoleRecord>().HasIndex(r => r.Resource).IsUnique();
+    modelBuilder.Entity<RoleRecord>().HasIndex(r => r.RoleName).IsUnique();
   }
 }

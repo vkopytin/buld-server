@@ -17,4 +17,6 @@ public interface IProfileService
   Task<(AuthUser?, ProfileError?)> SaveUser(AuthUser user);
   Task<(object[], ProfileError?)> ListPermissions();
   Task<(object[], ProfileError?)> ListRoles();
+  Task<(RoleRecord?, ProfileError?)> CreateRole(RoleRecord role);
+  Task<(RoleRecord?, ProfileError?)> UpdateRole(RoleRecord role);
 }
