@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Account.Db;
 using Account.Db.Records;
 using Auth.Models;
@@ -17,6 +18,40 @@ public class ProfileService : IProfileService
   {
     this.dbContext = dbContext;
     this.logger = logger;
+  }
+
+  public async Task<bool> Can(ClaimsPrincipal user, PermissionNames permission)
+  {
+    var result = false;
+    var roleNames = user.FindFirst("roles")?.Value.Split(',') ?? [];
+    foreach (var roleName in roleNames)
+    {
+      var roleRecord = await dbContext.Roles
+        .Where(r => r.RoleName == roleName)
+        .Take(1)
+        .FirstOrDefaultAsync();
+
+      if (roleRecord is null)
+      {
+        continue;
+      }
+
+      var workingPermissions = SystemPermissions.AllPermissions
+        .FirstOrDefault(p => p.Name == permission);
+
+      if (workingPermissions is null)
+      {
+        continue;
+      }
+
+      if ((roleRecord.Permissions & (int)workingPermissions.Permissions) == (int)workingPermissions.Permissions)
+      {
+        result |= true;
+        break;
+      }
+    }
+
+    return result;
   }
 
   public async Task<(AuthClient[]?, ProfileError?)> ListClients(string securityGroupId, int from = 0, int limit = 10)
@@ -170,10 +205,10 @@ public class ProfileService : IProfileService
 
   public async Task<(object[], ProfileError?)> ListRoles()
   {
-    var roles = dbContext.Roles
+    var roles = await dbContext.Roles
       .ToArrayAsync();
 
-    return (await roles, default);
+    return (roles, default);
   }
 
   public async Task<(RoleRecord?, ProfileError?)> CreateRole(RoleRecord role)

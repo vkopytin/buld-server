@@ -138,6 +138,13 @@ public class HomeController : ControllerBase
   [ActionName("list-users")]
   public async Task<IActionResult> ListUsers(int from = 0, int limit = 10)
   {
+    //toDo: verify permissions before listing users
+    var canListAllUsers = await this.profile.Can(User, PermissionNames.listall_users);
+    if (!canListAllUsers)
+    {
+      return Forbid();
+    }
+
     var (authUsers, err) = await profile.ListUsers(from, limit);
 
     if (authUsers is null)

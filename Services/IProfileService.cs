@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Account.Db;
 using Account.Db.Records;
 using Auth.Models;
 using Errors;
@@ -6,6 +8,8 @@ namespace Services;
 
 public interface IProfileService
 {
+  Task<bool> Can(ClaimsPrincipal user, PermissionNames permission);
+
   Task<(AuthClient[]?, ProfileError?)> ListClients(string securityGroupId, int from = 0, int limit = 10);
   Task<(AuthClient?, ProfileError?)> GetClient(string clientId);
   Task<(AuthClient?, ProfileError?)> AddClient(string securityGroupId, AuthClient client);

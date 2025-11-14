@@ -1,3 +1,4 @@
+
 namespace Account.Db;
 
 public class RolePermissionEntry
@@ -19,7 +20,7 @@ public static class SystemPermissions
       Permissions = RolePermissions.List | RolePermissions.Details | RolePermissions.Create
     },
     new() {
-      Name = PermissionNames.viewall_user,
+      Name = PermissionNames.listall_users,
       Permissions = RolePermissions.Details | RolePermissions.All
     }
   ];
