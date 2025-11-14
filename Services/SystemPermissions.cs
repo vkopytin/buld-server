@@ -20,8 +20,16 @@ public static class SystemPermissions
       Permissions = RolePermissions.List | RolePermissions.Details | RolePermissions.Create
     },
     new() {
+      Name = PermissionNames.edit_user,
+      Permissions = RolePermissions.Details | RolePermissions.Edit
+    },
+    new() {
       Name = PermissionNames.listall_users,
       Permissions = RolePermissions.Details | RolePermissions.All
+    },
+    new() {
+      Name = PermissionNames.editall_users,
+      Permissions = RolePermissions.Details | RolePermissions.Edit | RolePermissions.All
     }
   ];
 }
