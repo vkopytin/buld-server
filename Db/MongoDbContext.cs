@@ -16,6 +16,7 @@ public partial class MongoDbContext : DbContext
   public DbSet<WebSiteRecord> WebSites { get; init; }
   public DbSet<CategoryRecord> Categories { get; init; }
   public DbSet<WebSiteArticleRecord> WebSiteArticles { get; init; }
+  public DbSet<SecurityGroupRecord> SecurityGroups { get; init; }
 
   public MongoDbContext(MongoClient client)
    : base(new DbContextOptionsBuilder<MongoDbContext>().UseMongoDB(client, "main").Options)
@@ -34,6 +35,7 @@ public partial class MongoDbContext : DbContext
     modelBuilder.Entity<WebSiteRecord>().ToCollection("webSites");
     modelBuilder.Entity<ArticleBlockRecord>().ToCollection("articleBlocks");
     modelBuilder.Entity<WebSiteArticleRecord>().ToCollection("webSiteArticles");
+    modelBuilder.Entity<SecurityGroupRecord>().ToCollection("securityGroups");
 
     modelBuilder.Entity<ArticleRecord>().HasOne(a => a.Media);
     modelBuilder.Entity<RoleRecord>().HasIndex(r => r.RoleName).IsUnique();

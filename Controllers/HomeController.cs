@@ -1,7 +1,6 @@
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Account.Db;
 using Account.Db.Records;
+using Auth.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -138,21 +137,26 @@ public class HomeController : ControllerBase
   [ActionName("list-users")]
   public async Task<IActionResult> ListUsers(int from = 0, int limit = 10)
   {
-    //toDo: verify permissions before listing users
     var canListAllUsers = await this.profile.Can(User, PermissionNames.listall_users);
-    if (!canListAllUsers)
+    if (canListAllUsers)
     {
-      return Forbid();
+      var (authUsers, err) = await profile.ListUsers(from, limit);
+      if (authUsers is null)
+      {
+        return BadRequest(err);
+      }
+
+      return Ok(authUsers);
     }
 
-    var (authUsers, err) = await profile.ListUsers(from, limit);
-
-    if (authUsers is null)
+    var securityGroupId = User.GetOid();
+    var (user, userError) = await this.profile.GetUserBySecurityGroupId(securityGroupId);
+    if (user is null)
     {
-      return BadRequest(err);
+      return BadRequest(userError);
     }
 
-    return Ok(authUsers);
+    return Ok(new AuthUser[] { user });
   }
 
   [Authorize(

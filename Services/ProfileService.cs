@@ -153,6 +153,28 @@ public class ProfileService : IProfileService
     return (user.ToModel(), null);
   }
 
+  public async Task<(AuthUser?, ProfileError?)> GetUserBySecurityGroupId(string securityGroupId)
+  {
+    var securityGroup = await dbContext.SecurityGroups.FindAsync(
+      MongoDB.Bson.ObjectId.Parse(securityGroupId)
+    );
+    if (securityGroup is null)
+    {
+      return (null, new(Message: $"Security group with id: {securityGroupId} doesn't exist"));
+    }
+
+    var user = await dbContext.Users.Where(c => c.UserName == securityGroup.GroupName)
+      .Take(1)
+      .FirstOrDefaultAsync();
+
+    if (user is null)
+    {
+      return (null, new(Message: $"User with security group id: {securityGroupId} doesn't exist"));
+    }
+
+    return (user.ToModel(), null);
+  }
+
   public async Task<(AuthUser?, ProfileError?)> AddUser(AuthUser user)
   {
     var exists = await dbContext.Users.AnyAsync(c => c.UserName == user.UserName);

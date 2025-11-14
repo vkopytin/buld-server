@@ -17,6 +17,7 @@ public interface IProfileService
 
   Task<(AuthUser[]?, ProfileError?)> ListUsers(int from = 0, int limit = 10);
   Task<(AuthUser?, ProfileError?)> GetUser(string userId);
+  Task<(AuthUser?, ProfileError?)> GetUserBySecurityGroupId(string securityGroupId);
   Task<(AuthUser?, ProfileError?)> AddUser(AuthUser user);
   Task<(AuthUser?, ProfileError?)> SaveUser(AuthUser user);
   Task<(object[], ProfileError?)> ListPermissions();
