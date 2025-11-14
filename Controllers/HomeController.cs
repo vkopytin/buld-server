@@ -209,7 +209,10 @@ public class HomeController : ControllerBase
 
       if (existingUser.UserName != request.UserName)
       {
-        return Forbid();
+        return StatusCode(StatusCodes.Status403Forbidden, new
+        {
+          Message = "You can edit only your own user"
+        });
       }
 
       var user = request.ToModel();
@@ -223,7 +226,10 @@ public class HomeController : ControllerBase
       return Ok(authUser);
     }
 
-    return Forbid();
+    return StatusCode(StatusCodes.Status403Forbidden, new
+    {
+      Message = "You don't have permissions to edit users"
+    });
   }
 
   [Authorize(
