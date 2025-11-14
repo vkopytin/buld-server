@@ -1,11 +1,12 @@
 using Account.Db.Records;
 using Microsoft.EntityFrameworkCore;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using MongoDB.EntityFrameworkCore.Extensions;
 
 namespace Account.Db;
 
-public class MongoDbContext : DbContext
+public partial class MongoDbContext : DbContext
 {
   public DbSet<UserRecord> Users { get; init; }
   public DbSet<RoleRecord> Roles { get; init; }
@@ -35,6 +36,6 @@ public class MongoDbContext : DbContext
     modelBuilder.Entity<WebSiteArticleRecord>().ToCollection("webSiteArticles");
 
     modelBuilder.Entity<ArticleRecord>().HasOne(a => a.Media);
-    modelBuilder.Entity<RoleRecord>().HasIndex(r => r.RoleName).IsUnique();
+    modelBuilder.Entity<RoleRecord>().HasIndex(r => r.Resource).IsUnique();
   }
 }

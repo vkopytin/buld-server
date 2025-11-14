@@ -1,4 +1,6 @@
 using System.Security.Claims;
+using System.Threading.Tasks;
+using Account.Db;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -257,10 +259,10 @@ public class HomeController : ControllerBase
 
   [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
   [HttpGet]
-  [ActionName("list-roles")]
-  public async Task<IActionResult> ListRoles(int from = 0, int limit = 10)
+  [ActionName("list-permissions")]
+  public async Task<IActionResult> ListPermissions(int from = 0, int limit = 10)
   {
-    var (roles, err) = await profile.ListRoles(from, limit);
+    var (roles, err) = await profile.ListPermissions();
 
     if (roles is null)
     {
@@ -268,5 +270,36 @@ public class HomeController : ControllerBase
     }
 
     return Ok(roles);
+  }
+
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpGet]
+  [ActionName("list-roles")]
+  public async Task<IActionResult> ListUserRolesAndPermissions()
+  {
+    var (roles, err) = await profile.ListRoles();
+    if (roles is null)
+    {
+      return BadRequest(err);
+    }
+
+    return Ok(roles);
+  }
+
+  [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+  [HttpGet]
+  [ActionName("list-workflow-resources")]
+  public IActionResult ListWorkflowResources()
+  {
+    var resources = Enum.GetValues(typeof(WorkflowResource))
+      .Cast<WorkflowResource>()
+      .Select(r => new
+      {
+        Id = (int)r,
+        Name = r.ToString()
+      })
+      .ToArray();
+
+    return Ok(resources);
   }
 }

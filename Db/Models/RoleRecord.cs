@@ -1,11 +1,10 @@
-using System.ComponentModel.DataAnnotations;
-using Microsoft.EntityFrameworkCore;
 using Repository;
 
 namespace Account.Db.Records;
 
-public class RoleRecord : BaseEntity<Guid>
+public class RoleRecord : BaseEntity<int>
 {
-  public string RoleName { get; set; } = "";
-  public int Permissions { get; set; } = 0; // Value from enum RolePermissions
+  public string RoleName { get; set; } = string.Empty;
+  public WorkflowResource Resource { get; set; } = WorkflowResource.None;
+  public int Permissions { get; set; }
 }

@@ -155,12 +155,30 @@ public class ProfileService : IProfileService
     return (existingUser.ToModel(), null);
   }
 
-  public async Task<(RoleRecord[]?, ProfileError?)> ListRoles(int from = 0, int limit = 10)
+  public Task<(object[], ProfileError?)> ListPermissions()
   {
-    var roles = await dbContext.Roles
-      .Skip(from).Take(limit)
-      .ToArrayAsync();
+    var roles = SystemPermissions.AllPermissions
+    .Select(a => new
+    {
+      RoleName = a.Name.GetDescription(),
+      Permissions = a.Permissions
+    })
+    .ToArray<object>();
 
-    return (roles, null);
+    return Task.FromResult((roles, default(ProfileError)));
+  }
+
+  public async Task<(object[], ProfileError?)> ListRoles()
+  {
+    var roles = dbContext.Roles
+    .Select(r => new
+    {
+      RoleName = r.RoleName,
+      Resource = r.Resource,
+      Permissions = (RolePermissions)r.Permissions
+    })
+    .ToArrayAsync();
+
+    return (await roles as object[], default(ProfileError));
   }
 }

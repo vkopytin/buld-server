@@ -1,6 +1,6 @@
 namespace Account.Db;
 
-public enum RolePermissions
+public enum RolePermissions : int
 {
   None = 0,
   List = 1 << 0,   // 1
@@ -8,4 +8,5 @@ public enum RolePermissions
   Create = 1 << 2,   // 4
   Edit = 1 << 3, // 8
   Remove = 1 << 4, // 16
+  All = 1 << 5  // 32
 }
