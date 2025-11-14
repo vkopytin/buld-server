@@ -184,16 +184,46 @@ public class HomeController : ControllerBase
   [ActionName("save-user")]
   public async Task<IActionResult> SaveUser([FromBody] UserToSave request)
   {
-    var user = request.ToModel();
-
-    var (authUser, err) = await profile.SaveUser(user);
-
-    if (authUser is null)
+    var canEditAllUsers = await this.profile.Can(User, PermissionNames.editall_users);
+    if (canEditAllUsers)
     {
-      return BadRequest(err);
+      var user = request.ToModel();
+      var (authUser, err) = await profile.SaveUser(user);
+
+      if (authUser is null)
+      {
+        return BadRequest(err);
+      }
+
+      return Ok(authUser);
+    }
+    var canEditOwnUser = await this.profile.Can(User, PermissionNames.edit_user);
+    if (canEditOwnUser)
+    {
+      var securityGroupId = User.GetOid();
+      var (existingUser, getErr) = await this.profile.GetUserBySecurityGroupId(securityGroupId);
+      if (existingUser is null)
+      {
+        return BadRequest(getErr);
+      }
+
+      if (existingUser.UserName != request.UserName)
+      {
+        return Forbid();
+      }
+
+      var user = request.ToModel();
+      var (authUser, err) = await profile.SaveUser(user);
+
+      if (authUser is null)
+      {
+        return BadRequest(err);
+      }
+
+      return Ok(authUser);
     }
 
-    return Ok(authUser);
+    return Forbid();
   }
 
   [Authorize(

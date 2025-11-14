@@ -16,4 +16,6 @@ public enum PermissionNames : int
   remove_user,
   [Description("listall_users")]
   listall_users,
+  [Description("editall_users")]
+  editall_users,
 }
