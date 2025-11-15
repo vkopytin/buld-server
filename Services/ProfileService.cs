@@ -23,7 +23,7 @@ public class ProfileService : IProfileService
   public async Task<bool> Can(ClaimsPrincipal user, PermissionNames permission)
   {
     var result = false;
-    var roleNames = user.FindFirst("roles")?.Value.Split(',') ?? [];
+    var roleNames = user.FindFirst("roles")?.Value.Split(' ') ?? [];
     foreach (var roleName in roleNames)
     {
       var roleRecord = await dbContext.Roles
